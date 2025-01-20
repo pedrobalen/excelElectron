@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 
 function ExcelImporter() {
   const [tableData, setTableData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -37,23 +38,72 @@ function ExcelImporter() {
     }
   };
 
+  // Filter rows based on search term
+  const filteredData = tableData.filter((row) => {
+    return Object.values(row).some((value) =>
+      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
   return (
     <div>
-      <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
+      <div style={{ marginBottom: '20px' }}>
+        <input
+          type="file"
+          accept=".xlsx, .xls"
+          onChange={handleFileUpload}
+          style={{ marginRight: '20px' }}
+        />
+        <input
+          type="text"
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            padding: '8px',
+            borderRadius: '4px',
+            border: '1px solid #ccc',
+            width: '200px'
+          }}
+        />
+      </div>
       {tableData.length > 0 && (
-        <table>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
               {Object.keys(tableData[0]).map((header, index) => (
-                <th key={index}>{header}</th>
+                <th 
+                  key={index}
+                  style={{
+                    backgroundColor: '#f4f4f4',
+                    padding: '12px',
+                    borderBottom: '2px solid #ddd',
+                    textAlign: 'left'
+                  }}
+                >
+                  {header}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {tableData.map((row, rowIndex) => (
-              <tr key={rowIndex}>
+            {filteredData.map((row, rowIndex) => (
+              <tr 
+                key={rowIndex}
+                style={{
+                  backgroundColor: rowIndex % 2 === 0 ? '#ffffff' : '#f9f9f9'
+                }}
+              >
                 {Object.values(row).map((cell, cellIndex) => (
-                  <td key={cellIndex}>{cell}</td>
+                  <td 
+                    key={cellIndex}
+                    style={{
+                      padding: '8px',
+                      borderBottom: '1px solid #ddd'
+                    }}
+                  >
+                    {cell}
+                  </td>
                 ))}
               </tr>
             ))}
