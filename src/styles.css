@@ -1,34 +1,122 @@
-table {
+/* Container styles */
+.excel-container {
+  padding: 20px;
+}
+
+.controls-container {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Input styles */
+.search-input,
+.column-input {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.search-input {
+  width: 200px;
+}
+
+/* Button styles */
+.action-button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+.action-button:hover {
+  background-color: #e0e0e0;
+}
+
+.delete-button {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #ff4444;
+  background-color: #ffeeee;
+  color: #ff4444;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background-color: #ffe0e0;
+}
+
+/* Table styles */
+.table-container {
+  overflow-x: auto;
+}
+
+.excel-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
 }
 
-table,
-th,
-td {
+.excel-table,
+.excel-table th,
+.excel-table td {
   border: 1px solid #ddd;
 }
 
-th,
-td {
+.excel-table th,
+.excel-table td {
   padding: 8px;
   text-align: left;
 }
 
-th {
+.excel-table th {
   background-color: #f4f4f4;
   font-weight: bold;
 }
 
-td {
+.excel-table td {
   background-color: #fff;
+  cursor: pointer;
 }
 
-tr:nth-child(even) td {
+.excel-table tr:nth-child(even) td {
   background-color: #f9f9f9;
 }
 
-tr:hover td {
+.excel-table tr:hover td {
   background-color: #f1f1f1;
+}
+
+/* Cell editing styles */
+.cell-input {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #aaa;
+  box-sizing: border-box;
+}
+
+.file-info {
+  padding: 8px;
+  background-color: #e8f4f8;
+  border-radius: 4px;
+  color: #2c5282;
+  font-size: 0.9em;
+}
+
+.action-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #e0e0e0;
+}
+
+.action-button-highlight {
+  background-color: #4caf50;
+  color: white;
+  border-color: #45a049;
+}
+
+.action-button-highlight:hover {
+  background-color: #45a049;
 }
