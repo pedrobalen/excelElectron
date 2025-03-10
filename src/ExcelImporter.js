@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
-import "./styles.css";
+import "./ExcelImporter.css";
 
 function ExcelImporter() {
   const [tableData, setTableData] = useState([]);
@@ -128,7 +128,7 @@ function ExcelImporter() {
         <div className="search-container">
           <input
             type="text"
-            placeholder="Search..."
+            placeholder="Procure..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"

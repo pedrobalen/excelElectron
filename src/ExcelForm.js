@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
-import './styles.css';
+
 
 function ExcelForm() {
   const [tableData, setTableData] = useState([]);
