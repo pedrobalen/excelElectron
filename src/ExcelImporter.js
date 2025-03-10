@@ -5,7 +5,6 @@ import "./styles.css";
 function ExcelImporter() {
   const [tableData, setTableData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [newColumnName, setNewColumnName] = useState("");
   const [editingCell, setEditingCell] = useState(null);
   const [editValue, setEditValue] = useState("");
   const [fileName, setFileName] = useState("");
@@ -86,28 +85,6 @@ function ExcelImporter() {
     setHasUnsavedChanges(true);
   };
 
-  const handleAddColumn = () => {
-    if (newColumnName.trim() === "") return;
-
-    const updatedData = tableData.map((row) => ({
-      ...row,
-      [newColumnName]: "",
-    }));
-
-    updateTableData(updatedData);
-    setNewColumnName("");
-  };
-
-  const handleAddRow = () => {
-    const newRow = {};
-    if (tableData.length > 0) {
-      Object.keys(tableData[0]).forEach((key) => {
-        newRow[key] = "";
-      });
-    }
-    updateTableData([...tableData, newRow]);
-  };
-
   const startEditing = (rowIndex, column, value) => {
     setEditingCell({ rowIndex, column });
     setEditValue(value.toString());
@@ -144,18 +121,22 @@ function ExcelImporter() {
     );
   });
 
-  // Rest of the component remains the same...
   return (
     <div className="excel-container">
       <div className="controls-container">
         <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-input"
-        />
+        <div className="search-container">
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+          <span className="row-counter">
+             {filteredData.length} resultados em {tableData.length} fileiras
+          </span>
+        </div>
         {fileName && (
           <button
             onClick={saveToExcel}
@@ -169,22 +150,6 @@ function ExcelImporter() {
         )}
       </div>
 
-      <div className="controls-container">
-        <input
-          type="text"
-          placeholder="New Column Name"
-          value={newColumnName}
-          onChange={(e) => setNewColumnName(e.target.value)}
-          className="column-input"
-        />
-        <button onClick={handleAddColumn} className="action-button">
-          Add Column
-        </button>
-        <button onClick={handleAddRow} className="action-button">
-          Add Row
-        </button>
-      </div>
-
       {tableData.length > 0 && (
         <div className="table-container">
           <table className="excel-table">
@@ -193,7 +158,6 @@ function ExcelImporter() {
                 {Object.keys(tableData[0]).map((header, index) => (
                   <th key={index}>{header}</th>
                 ))}
-                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -222,14 +186,6 @@ function ExcelImporter() {
                       )}
                     </td>
                   ))}
-                  <td>
-                    <button
-                      onClick={() => handleDeleteRow(rowIndex)}
-                      className="delete-button"
-                    >
-                      Delete
-                    </button>
-                  </td>
                 </tr>
               ))}
             </tbody>
