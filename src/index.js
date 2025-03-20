@@ -1,8 +1,8 @@
 import React from "react";
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from "react-router-dom";
 import ReactDOM from "react-dom/client";
-import ExcelImporter from "./ExcelImporter";
-import './index.css';
+import ExcelImporter from "./TableReader";
+import "./index.css";
 import ExcelForm from "./ExcelForm";
 import Menu from "./Menu";
 

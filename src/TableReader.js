@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
-import "./ExcelImporter.css";
+import "./TableReader.css";
 
 function ExcelImporter() {
   const [tableData, setTableData] = useState([]);
@@ -134,7 +134,7 @@ function ExcelImporter() {
             className="search-input"
           />
           <span className="row-counter">
-             {filteredData.length} resultados em {tableData.length} fileiras
+            {filteredData.length} resultados em {tableData.length} fileiras
           </span>
         </div>
         {fileName && (

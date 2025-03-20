@@ -1,166 +1,162 @@
-import React, { useState } from 'react';
-import * as XLSX from 'xlsx';
+import React, { useState } from "react";
+import * as XLSX from "xlsx";
+import "./ExcelForm.css";
 
+const ExcelForm = () => {
+  const [excelData, setExcelData] = useState(null);
+  const [selectedResearch, setSelectedResearch] = useState("");
+  const [formFields, setFormFields] = useState([]);
 
-function ExcelForm() {
-  const [tableData, setTableData] = useState([]);
-  const [selectedResearch, setSelectedResearch] = useState('');
-  const [columnName, setColumnName] = useState('');
-  const [cellValue, setCellValue] = useState('');
-  const [fileName, setFileName] = useState('');
-  const [originalWorkbook, setOriginalWorkbook] = useState(null);
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setFileName(file.name);
-      const reader = new FileReader();
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const workbook = XLSX.read(event.target.result, { type: "binary" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      setExcelData(data);
+    };
 
-      reader.onload = (e) => {
-        const binaryStr = e.target.result;
-        const wb = XLSX.read(binaryStr, { type: 'binary' });
-        setOriginalWorkbook(wb);
-        
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(ws, {
-          header: 1,
-          defval: ''
-        });
+    reader.readAsBinaryString(file);
+  };
 
-        if (jsonData.length > 1) {
-          const headers = jsonData[1];
-          const rows = jsonData.slice(2);
-          const formattedData = rows.map((row) => {
-            const rowObject = {};
-            row.forEach((cell, index) => {
-              rowObject[headers[index]] = cell;
-            });
-            return rowObject;
-          });
+  const determineFieldType = (value) => {
+    if (!value || typeof value !== "string") return "text";
 
-          setTableData(formattedData);
-        }
-      };
+    const lowerValue = value.toLowerCase();
+    if (lowerValue === "yes" || lowerValue === "no") return "radio";
+    if (value.includes("\n")) return "textarea";
+    return "text";
+  };
 
-      reader.readAsBinaryString(file);
+  const handleResearchSelect = (research) => {
+    setSelectedResearch(research);
+
+    if (!research || !excelData) {
+      setFormFields([]);
+      return;
     }
+
+    // Get headers from the second row (index 1) instead of first row
+    const headers = excelData[1];
+    const selectedRow = excelData.find((row) => row[0] === research);
+
+    console.log("Headers from second row:", headers);
+    console.log("Selected Row:", selectedRow);
+
+    if (headers && selectedRow) {
+      let fields = [];
+
+      // Start from index 1 to skip the research name column
+      for (let i = 1; i < headers.length; i++) {
+        if (headers[i]) {
+          // Only create fields for non-empty headers
+          fields.push({
+            header: String(headers[i]),
+            value: String(selectedRow[i] || ""),
+            columnIndex: i,
+          });
+        }
+      }
+
+      console.log("Generated Fields:", fields);
+      setFormFields(fields);
+    }
+  };
+
+  const handleFieldChange = (columnIndex, value) => {
+    setFormFields((prev) =>
+      prev.map((field) =>
+        field.columnIndex === columnIndex ? { ...field, value } : field
+      )
+    );
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!selectedResearch || !columnName || !cellValue) {
-      alert('Please fill in all fields');
-      return;
-    }
+    const updatedRow = [
+      selectedResearch,
+      ...formFields.map((field) => field.value),
+    ];
 
-    const rowIdx = tableData.findIndex(row => Object.values(row)[0] === selectedResearch);
-    
-    if (rowIdx === -1) {
-      alert('Research not found');
-      return;
-    }
+    const newExcelData = excelData.map((row) =>
+      row[0] === selectedResearch ? updatedRow : row
+    );
 
-    if (!tableData[0] || !tableData[0].hasOwnProperty(columnName)) {
-      alert('Invalid column name');
-      return;
-    }
-
-    const updatedData = [...tableData];
-    updatedData[rowIdx] = {
-      ...updatedData[rowIdx],
-      [columnName]: cellValue
-    };
-
-    setTableData(updatedData);
-
-    if (originalWorkbook && fileName) {
-      const ws = originalWorkbook.Sheets[originalWorkbook.SheetNames[0]];
-      
-      const headers = Object.keys(updatedData[0]);
-      const colIdx = headers.indexOf(columnName);
-      
-      const cellAddress = XLSX.utils.encode_cell({
-        r: rowIdx + 2,
-        c: colIdx
-      });
-
-      const existingCell = ws[cellAddress] || {};
-      ws[cellAddress] = {
-        ...existingCell,
-        v: cellValue,
-        w: cellValue.toString()
-      };
-
-      XLSX.writeFile(originalWorkbook, fileName);
-    }
-
-    setSelectedResearch('');
-    setColumnName('');
-    setCellValue('');
+    const ws = XLSX.utils.aoa_to_sheet(newExcelData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    XLSX.writeFile(wb, "updated_research.xlsx");
   };
 
   return (
-    <div>
-      <div className="file-upload">
+    <div className="google-form-container">
+      <div className="form-header">
+        <h1>Research Data Form</h1>
+        <p className="form-description">
+          Upload Excel file and edit research data
+        </p>
+      </div>
+
+      <div className="form-card">
         <input
           type="file"
-          accept=".xlsx,.xls"
+          accept=".xlsx, .xls"
           onChange={handleFileUpload}
           className="file-input"
         />
       </div>
 
-      {tableData.length > 0 && (
-        <form onSubmit={handleSubmit} className="excel-form">
-          <div className="form-group">
-            <label htmlFor="selectedResearch">Select Research:</label>
-            <select
-              id="selectedResearch"
-              value={selectedResearch}
-              onChange={(e) => setSelectedResearch(e.target.value)}
-            >
-              <option value="">Select a research</option>
-              {tableData.map((row) => (
-                <option key={Object.values(row)[0]} value={Object.values(row)[0]}>
-                  {Object.values(row)[0]}
-                </option>
-              ))}
-            </select>
-          </div>
+      {excelData && (
+        <div className="form-card">
+          <label>Select Research:</label>
+          <select
+            value={selectedResearch}
+            onChange={(e) => handleResearchSelect(e.target.value)}
+          >
+            <option value="">Choose a research</option>
+            {excelData.slice(1).map((row, index) => (
+              <option key={index} value={row[0]}>
+                {row[0]}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
-          <div className="form-group">
-            <label htmlFor="columnName">Column Name:</label>
-            <select
-              id="columnName"
-              value={columnName}
-              onChange={(e) => setColumnName(e.target.value)}
-            >
-              <option value="">Select a column</option>
-              {tableData[0] &&
-                Object.keys(tableData[0]).map((col) => (
-                  <option key={col} value={col}>
-                    {col}
-                  </option>
-                ))}
-            </select>
-          </div>
+      {/* Debug information */}
+      <div style={{ display: "none" }}>
+        <p>Selected Research: {selectedResearch}</p>
+        <p>Form Fields Count: {formFields.length}</p>
+      </div>
 
-          <div className="form-group">
-            <label htmlFor="cellValue">Cell Value:</label>
-            <input
-              type="text"
-              id="cellValue"
-              value={cellValue}
-              onChange={(e) => setCellValue(e.target.value)}
-            />
-          </div>
-
-          <button type="submit">Save Changes</button>
+      {/* Form fields */}
+      {formFields.length > 0 && (
+        <form onSubmit={handleSubmit}>
+          {formFields.map((field) => (
+            <div key={field.columnIndex} className="form-card">
+              <h3>{field.header}</h3>
+              <input
+                type="text"
+                value={field.value}
+                onChange={(e) =>
+                  handleFieldChange(field.columnIndex, e.target.value)
+                }
+                className="form-input"
+              />
+            </div>
+          ))}
+          <button type="submit" className="submit-button">
+            Save Changes
+          </button>
         </form>
       )}
     </div>
   );
-}
+};
 
 export default ExcelForm;
