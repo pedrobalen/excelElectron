@@ -46,8 +46,21 @@ function ExcelImporter() {
   const loadSheetData = (wb, sheetName) => {
     const ws = wb.Sheets[sheetName];
 
+    // Ensure cells with "/" are treated as text
     for (let cell in ws) {
       if (cell[0] === "!") continue;
+
+      // If the cell has a value and contains a slash
+      if (
+        ws[cell].v &&
+        typeof ws[cell].v === "string" &&
+        ws[cell].v.includes("/")
+      ) {
+        ws[cell].t = "s"; // Force cell type to be string
+        ws[cell].w = ws[cell].v; // Ensure the formatted text matches the value
+      }
+
+      // For any cell with a formatted value, use that instead
       if (ws[cell].w) {
         ws[cell].v = ws[cell].w;
       }
@@ -65,6 +78,7 @@ function ExcelImporter() {
       const formattedData = rows.map((row) => {
         const rowObject = {};
         row.forEach((cell, index) => {
+          // Ensure the cell value is treated as a string
           rowObject[headers[index]] = String(cell || "");
         });
         return rowObject;

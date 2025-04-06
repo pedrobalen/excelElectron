@@ -15,7 +15,9 @@ function createWindow() {
 
   mainWindow.loadURL("http://localhost:3000");
 
-  mainWindow.webContents.openDevTools();
+  // To open DevTools manually, use Ctrl+Shift+I (Windows/Linux) or Cmd+Option+I (macOS)
+  // Or uncomment the following line to open them automatically:
+  // mainWindow.webContents.openDevTools();
 }
 
 app.whenReady().then(() => {
